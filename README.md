@@ -4,7 +4,7 @@
 
 ```bash
 pip install agentlog
-agentlog ingest              # 1,644 sessions, 60K messages, 31K tool calls
+agentlog ingest              # Hermes + Claude Code supported
 agentlog query -p tools      # Which tool fails most?
 agentlog query -p cost       # What model costs the most?
 agentlog replay              # Replay any past session like a transcript
@@ -43,10 +43,11 @@ If you run an AI agent on your own machine, you have nothing.
 ```bash
 pip install agentlog
 
-# Hermes users: point at your state.db
+# Hermes: reads state.db directly
 agentlog ingest
 
-# Other agents: parsers for Claude Code, Codex, OpenClaw coming soon
+# Claude Code: reads ~/.claude/projects/ session files
+agentlog ingest --agent claude-code
 
 # See daily token usage
 agentlog query -p tokens
@@ -64,14 +65,15 @@ agentlog replay <session_id_prefix>
 | Agent | Parser | Status |
 |-------|--------|--------|
 | Hermes | `state.db` direct read | ✅ Complete |
-| Claude Code | JSON log files | 🔜 Planned |
+| Claude Code | JSONL session files | ✅ Complete |
 | Codex CLI | Terminal output | 🔜 Planned |
 | OpenClaw | Session store | 🔜 Planned |
 
 ## How It Works
 
 ```
-Your agent logs ──→ parsers/ ──→ agentlog.db (SQLite, ~5MB)
+Hermes state.db ──────┐
+Claude Code JSONL ────┤── parsers/ ──→ agentlog.db (SQLite, ~5MB)
                                      │
                     ┌────────────────┼────────────────┐
                     │                │                │
