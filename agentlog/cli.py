@@ -25,8 +25,18 @@ def cmd_ingest(args):
             sys.exit(1)
         from agentlog.parsers.hermes import ingest
         stats = ingest(source, DB_PATH)
+    elif args.agent == "claude-code":
+        default_cc = os.path.expanduser("~/.claude/projects/")
+        source = args.source or default_cc
+        if not os.path.exists(source):
+            print(f"Error: Claude Code sessions not found at {source}")
+            print("  Specify path with: agentlog ingest --agent claude-code --source <path>")
+            print("  Default path: ~/.claude/projects/")
+            sys.exit(1)
+        from agentlog.parsers.claude_code import ingest
+        stats = ingest(source, DB_PATH)
     else:
-        print(f"Error: unsupported agent type '{args.agent}'. Supported: hermes")
+        print(f"Error: unsupported agent type '{args.agent}'. Supported: hermes, claude-code")
         sys.exit(1)
 
     print(f"Ingested: {stats['sessions']} sessions, {stats['messages']} messages, "
@@ -207,7 +217,7 @@ def main():
     # ingest
     p_ingest = sub.add_parser("ingest", help="Ingest agent logs")
     p_ingest.add_argument("--agent", "-a", default="hermes",
-                          choices=["hermes"], help="Agent type")
+                          choices=["hermes", "claude-code"], help="Agent type")
     p_ingest.add_argument("--source", "-s", help="Path to agent log file")
     p_ingest.set_defaults(func=cmd_ingest)
 
